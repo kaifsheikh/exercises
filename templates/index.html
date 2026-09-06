@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Workout Tracker</title>
+    <style>
+        * { box-sizing: border-box; font-family: sans-serif; }
+        body { background-color: #f4f6f9; padding: 20px 15px; display: flex; justify-content: center; }
+        .container { background: #ffffff; width: 100%; max-width: 480px; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h2 { margin-top: 0; color: #2c3e50; text-align: center; }
+        .alert { padding: 12px; background-color: #d4edda; color: #155724; border-radius: 8px; margin-bottom: 20px; text-align: center; font-size: 14px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #34495e; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; background-color: #fff; }
+        .btn { width: 100%; background-color: #3498db; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .view-link { display: block; text-align: center; margin-top: 18px; color: #3498db; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🏋️ Gym Workout Tracker</h2>
+        
+        {% if msg %}
+            <div class="alert">{{ msg }}</div>
+        {% endif %}
+
+        <form action="/add" method="POST">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="workout_date" value="{{ today_date }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Muscle Name</label>
+                <select name="muscle_name" required>
+                    <option value="" disabled selected>Muscle Choose Karein</option>
+                    <option value="Chest">Chest</option>
+                    <option value="Back">Back</option>
+                    <option value="Bicep">Bicep</option>
+                    <option value="Tricep">Tricep</option>
+                    <option value="Shoulder">Shoulder</option>
+                    <option value="Forearms">Forearms</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Exercise Name</label>
+                <input type="text" name="exercise_name" placeholder="e.g. Incline Dumbbell Curls" required>
+            </div>
+
+            <div class="form-group">
+                <label>Sets</label>
+                <select name="sets" required>
+                    <option value="" disabled selected>Sets Select Karein</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Reps</label>
+                <input type="number" name="reps" placeholder="e.g. 24" required>
+            </div>
+
+            <div class="form-group">
+                <label>Weight</label>
+                <input type="text" name="weight" placeholder="e.g. 30kg" required>
+            </div>
+
+            <button type="submit" class="btn">Save Workout</button>
+        </form>
+
+        <a href="/data" class="view-link">Saved Data Dekhne Ke Liye Yahan Click Karein</a>
+    </div>
+</body>
+</html>
