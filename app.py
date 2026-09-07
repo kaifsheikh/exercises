@@ -78,6 +78,7 @@ def delete_workout(id):
     conn.close()
     return redirect(url_for('view_data', msg="Record Successfully Delete Ho Gaya!"))
 
+# app.py mein yeh change karein:
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=False)  # localhost par chalega
