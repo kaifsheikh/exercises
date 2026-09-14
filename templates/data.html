@@ -3,61 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saved Workouts</title>
+    <title>Workout History</title>
     <style>
-        * { box-sizing: border-box; font-family: sans-serif; }
-        body { background-color: #f4f6f9; padding: 20px 10px; }
-        .container { background: #ffffff; max-width: 700px; margin: 0 auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .alert { padding: 10px; background-color: #f8d7da; color: #721c24; border-radius: 8px; margin-bottom: 15px; font-size: 14px; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
-        th, td { padding: 10px 6px; text-align: left; border-bottom: 1px solid #e1e8ed; }
-        th { background-color: #3498db; color: white; }
-        .btn-back { display: inline-block; margin-bottom: 15px; color: #3498db; text-decoration: none; font-weight: bold; }
-        .btn-delete { background-color: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-delete:active { background-color: #c0392b; }
+        :root { --primary: #4a90e2; --bg: #f4f7f6; --text: #333; --danger: #ff5e5e; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; font-family: sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; }
+        
+        h2 { text-align: center; color: var(--primary); }
+        .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; }
+        
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; color: var(--primary); }
+        .card-body { font-size: 14px; margin-bottom: 10px; }
+        .card-footer { display: flex; justify-content: flex-end; }
+        
+        .btn-delete { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .btn-back { display: inline-block; margin-bottom: 15px; color: var(--primary); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/" class="btn-back">← Back to Form</a>
-        <h2>Saved Gym Workouts</h2>
+        <a href="/" class="btn-back">← Back</a>
+        <h2>Workout History</h2>
 
-        {% if msg %}
-            <div class="alert">{{ msg }}</div>
-        {% endif %}
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="Search..." onkeyup="filterWorkouts()">
+            <input type="date" id="dateFilter" onchange="filterWorkouts()">
+        </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Date</th>
-                    <th>Muscle</th>
-                    <th>Exercise</th>
-                    <th>Sets</th>
-                    <th>Reps</th>
-                    <th>Weight</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in records %}
-                <tr>
-                    <td>{{ row[0] }}</td>
-                    <td>{{ row[1] }}</td>
-                    <td>{{ row[2] }}</td>
-                    <td>{{ row[3] }}</td>
-                    <td>{{ row[4] }}</td>
-                    <td>{{ row[5] }}</td>
-                    <td>{{ row[6] }}</td>
-                    <td>
-                        <form action="/delete/{{ row[0] }}" method="POST" onsubmit="return confirm('Kia aap waqai is record ko delete karna chahte hain?');">
-                            <button type="submit" class="btn-delete">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div id="workoutList">
+            {% for row in records %}
+            <div class="card workout-card" data-raw-date="{{ row[1] }}">
+                <div class="card-header">
+                    <span>{{ row[1] }}</span>
+                    <span>{{ row[2] }}</span>
+                </div>
+                <div class="card-body">
+                    <strong>{{ row[3] }}</strong><br>
+                    Sets: {{ row[4] }} | Reps: {{ row[5] }} | Weight: {{ row[6] }}
+                </div>
+                <div class="card-footer">
+                    <form action="/delete/{{ row[0] }}" method="POST" onsubmit="return confirm('Delete?');">
+                        <button type="submit" class="btn-delete">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <p id="noResults" style="text-align:center; display:none;">Koi record nahi mila.</p>
     </div>
+
+    <script>
+        function parseDateToYYYYMMDD(dateStr) {
+            // "07 Sep 2026" -> "2026-09-07"
+            const months = {
+                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+                'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+            };
+            const parts = dateStr.split(' '); // ["07", "Sep", "2026"]
+            if (parts.length !== 3) return "";
+            return `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2, '0')}`;
+        }
+
+        function filterWorkouts() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const dateInput = document.getElementById('dateFilter').value;
+            const cards = document.querySelectorAll('.workout-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                const rawDate = card.getAttribute('data-raw-date');
+                const formattedDate = parseDateToYYYYMMDD(rawDate);
+                
+                const matchesSearch = text.includes(search);
+                const matchesDate = (dateInput === "" || formattedDate === dateInput);
+                
+                if (matchesSearch && matchesDate) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    </script>
 </body>
 </html>
